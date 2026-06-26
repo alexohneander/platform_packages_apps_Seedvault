@@ -63,6 +63,13 @@ class BackendManager(
                 mBackendProperties = webDavProperties
             }
 
+            StoragePluginType.SMB -> {
+                val smbProperties =
+                    settingsManager.smbProperties ?: error("No SMB config saved")
+                mBackend = backendFactory.createSmbBackend(smbProperties.config)
+                mBackendProperties = smbProperties
+            }
+
             null -> {
                 mBackend = null
                 mBackendProperties = null

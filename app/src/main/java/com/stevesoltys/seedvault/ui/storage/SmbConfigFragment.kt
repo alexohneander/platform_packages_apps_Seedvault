@@ -27,11 +27,11 @@ import com.stevesoltys.seedvault.ui.INTENT_EXTRA_IS_RESTORE
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.getActivityViewModel
 
-class WebDavConfigFragment : Fragment(), View.OnClickListener {
+class SmbConfigFragment : Fragment(), View.OnClickListener {
 
     companion object {
-        fun newInstance(isRestore: Boolean): WebDavConfigFragment {
-            val f = WebDavConfigFragment()
+        fun newInstance(isRestore: Boolean): SmbConfigFragment {
+            val f = SmbConfigFragment()
             f.arguments = Bundle().apply {
                 putBoolean(INTENT_EXTRA_IS_RESTORE, isRestore)
             }
@@ -52,13 +52,13 @@ class WebDavConfigFragment : Fragment(), View.OnClickListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val v: View = inflater.inflate(R.layout.fragment_webdav_config, container, false)
-        urlInput = v.requireViewById(R.id.webdavUrlInput)
-        userInput = v.requireViewById(R.id.webdavUserInput)
-        passInput = v.requireViewById(R.id.webDavPassInput)
-        button = v.requireViewById(R.id.webdavButton)
+        val v: View = inflater.inflate(R.layout.fragment_smb_config, container, false)
+        urlInput = v.requireViewById(R.id.smbHostInput)
+        // userInput = v.requireViewById(R.id.webdavUserInput)
+        // passInput = v.requireViewById(R.id.webDavPassInput)
+        // button = v.requireViewById(R.id.webdavButton)
         button.setOnClickListener(this)
-        progressBar = v.requireViewById(R.id.progressBar)
+        // progressBar = v.requireViewById(R.id.progressBar)
         return v
     }
 

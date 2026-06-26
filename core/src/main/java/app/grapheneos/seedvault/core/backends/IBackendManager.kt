@@ -15,4 +15,5 @@ public interface IBackendManager {
 public enum class BackendId {
     SAF,
     WEBDAV,
+    SMB,
 }

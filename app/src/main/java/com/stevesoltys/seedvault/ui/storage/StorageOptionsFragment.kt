@@ -124,6 +124,16 @@ internal class StorageOptionsFragment : Fragment(), StorageOptionClickedListener
                     commit()
                 }
             }
+
+            is SmbOption ->{
+                val isRestore = requireArguments().getBoolean(INTENT_EXTRA_IS_RESTORE)
+                val f = SmbConfigFragment.newInstance(isRestore)
+                parentFragmentManager.beginTransaction().apply {
+                    replace(R.id.fragment, f)
+                    addToBackStack("SMB")
+                    commit()
+                }
+            }
         }
     }
 }

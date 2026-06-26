@@ -65,3 +65,14 @@ internal class WebDavOption(context: Context) : StorageOption() {
     override val enabled: Boolean = true
     override val nonDefaultAction: (() -> Unit)? = null
 }
+
+internal class SmbOption(context: Context) : StorageOption(){
+    override val id: String = "smb"
+    override val icon: Drawable? = getDrawable(context, R.drawable.ic_cloud_circle)
+    override val title: String = context.getString(R.string.storage_smb_option_title)
+    override val summary: String = context.getString(R.string.storage_smb_option_summary)
+    override val availableBytes: Long? = null
+    override val requiresNetwork: Boolean = true
+    override val enabled: Boolean = true
+    override val nonDefaultAction: (() -> Unit)? = null
+}

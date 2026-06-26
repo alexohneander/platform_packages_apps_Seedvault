@@ -26,6 +26,7 @@ import androidx.work.WorkManager
 import com.google.android.material.color.DynamicColors
 import com.stevesoltys.seedvault.backend.BackendManager
 import com.stevesoltys.seedvault.backend.saf.storagePluginModuleSaf
+import com.stevesoltys.seedvault.backend.smb.storagePluginModuleSmb
 import com.stevesoltys.seedvault.backend.webdav.storagePluginModuleWebDav
 import com.stevesoltys.seedvault.crypto.cryptoModule
 import com.stevesoltys.seedvault.header.headerModule
@@ -144,6 +145,7 @@ open class App : Application() {
         headerModule,
         metadataModule,
         storagePluginModuleSaf,
+        storagePluginModuleSmb,
         storagePluginModuleWebDav,
         backupModule,
         restoreModule,

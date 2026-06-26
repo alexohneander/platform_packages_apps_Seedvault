@@ -19,8 +19,11 @@ import com.stevesoltys.seedvault.permitDiskReads
 import app.grapheneos.seedvault.core.backends.Backend
 import app.grapheneos.seedvault.core.backends.BackendId
 import app.grapheneos.seedvault.core.backends.saf.SafProperties
+import app.grapheneos.seedvault.core.backends.smb.SmbConfig
+import app.grapheneos.seedvault.core.backends.smb.SmbProperties
 import app.grapheneos.seedvault.core.backends.webdav.WebDavConfig
 import app.grapheneos.seedvault.core.backends.webdav.WebDavProperties
+import com.stevesoltys.seedvault.backend.smb.SmbHandler.Companion.createSmbProperties
 import java.util.concurrent.ConcurrentSkipListSet
 
 internal const val PREF_KEY_TOKEN = "token"
@@ -36,6 +39,7 @@ internal enum class StoragePluginType {
     // don't rename, will break existing installs
     SAF,
     WEB_DAV,
+    SMB,
 }
 
 private const val PREF_KEY_STORAGE_URI = "storageUri"
@@ -52,6 +56,8 @@ private const val PREF_KEY_FLASH_DRIVE_PRODUCT_ID = "flashDriveProductId"
 private const val PREF_KEY_WEBDAV_URL = "webDavUrl"
 private const val PREF_KEY_WEBDAV_USER = "webDavUser"
 private const val PREF_KEY_WEBDAV_PASS = "webDavPass"
+
+private const val PREF_KEY_SMB_URL = "smbUrl"
 
 private const val PREF_KEY_BACKUP_APP_BLACKLIST = "backupAppBlacklist"
 
@@ -141,6 +147,7 @@ class SettingsManager(private val context: Context) {
         val value = when (plugin.id) {
             BackendId.SAF -> StoragePluginType.SAF
             BackendId.WEBDAV -> StoragePluginType.WEB_DAV
+            BackendId.SMB -> StoragePluginType.SMB
             else -> error("Unsupported plugin: ${plugin::class.java.simpleName}")
         }.name
         prefs.edit {
@@ -209,6 +216,19 @@ class SettingsManager(private val context: Context) {
                 password = prefs.getString(PREF_KEY_WEBDAV_PASS, null) ?: return null,
             )
             return createWebDavProperties(context, config)
+        }
+
+    val smbProperties: SmbProperties?
+        get() {
+            val config = SmbConfig(
+                host = prefs.getString(PREF_KEY_SMB_URL, null) ?: return null,
+                share = prefs.getString("", null) ?: return null,
+                path = prefs.getString("",null) ?: return null,
+                username = prefs.getString("",null) ?: return null,
+                password = prefs.getString("",null) ?: return null,
+                domain = prefs.getString("",null) ?: return null,
+            )
+            return createSmbProperties(context, config)
         }
 
     fun saveWebDavConfig(config: WebDavConfig) {

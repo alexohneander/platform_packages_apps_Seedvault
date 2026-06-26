@@ -8,6 +8,8 @@ package app.grapheneos.seedvault.core.backends
 import android.content.Context
 import app.grapheneos.seedvault.core.backends.saf.SafBackend
 import app.grapheneos.seedvault.core.backends.saf.SafProperties
+import app.grapheneos.seedvault.core.backends.smb.SmbBackend
+import app.grapheneos.seedvault.core.backends.smb.SmbConfig
 import app.grapheneos.seedvault.core.backends.webdav.WebDavBackend
 import app.grapheneos.seedvault.core.backends.webdav.WebDavConfig
 
@@ -17,4 +19,7 @@ public class BackendFactory {
 
     public fun createWebDavBackend(config: WebDavConfig): Backend =
         RetryBackend(WebDavBackend(config))
+
+    public fun createSmbBackend(config: SmbConfig): Backend =
+        RetryBackend(SmbBackend(config))
 }
