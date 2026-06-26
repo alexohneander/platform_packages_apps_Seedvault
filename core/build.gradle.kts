@@ -31,6 +31,12 @@ android {
             "-Xexplicit-api=strict"
         )
     }
+
+    packaging {
+        resources {
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
+    }
 }
 
 dependencies {
@@ -44,6 +50,7 @@ dependencies {
     implementation(libs.google.tink.android)
     implementation(fileTree("$projectDir/libs/dav4jvm").include("*.jar"))
     implementation(libs.squareup.okio)
+    implementation(libs.smbj)
     implementation(libs.kotlin.logging)
     implementation(libs.slf4j.api)
 

@@ -67,7 +67,11 @@ android {
 
     packaging {
         resources {
-            excludes += listOf("META-INF/LICENSE.md", "META-INF/LICENSE-notice.md")
+            excludes += listOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
+                "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+            )
         }
     }
 
