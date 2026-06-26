@@ -57,7 +57,12 @@ private const val PREF_KEY_WEBDAV_URL = "webDavUrl"
 private const val PREF_KEY_WEBDAV_USER = "webDavUser"
 private const val PREF_KEY_WEBDAV_PASS = "webDavPass"
 
-private const val PREF_KEY_SMB_URL = "smbUrl"
+private const val PREF_KEY_SMB_HOST = "smbHost"
+private const val PREF_KEY_SMB_SHARE = "smbShare"
+private const val PREF_KEY_SMB_PATH = "smbPath"
+private const val PREF_KEY_SMB_USER = "smbUser"
+private const val PREF_KEY_SMB_PASS = "smbPass"
+private const val PREF_KEY_SMB_DOMAIN = "smbDomain"
 
 private const val PREF_KEY_BACKUP_APP_BLACKLIST = "backupAppBlacklist"
 
@@ -221,12 +226,12 @@ class SettingsManager(private val context: Context) {
     val smbProperties: SmbProperties?
         get() {
             val config = SmbConfig(
-                host = prefs.getString(PREF_KEY_SMB_URL, null) ?: return null,
-                share = prefs.getString("", null) ?: return null,
-                path = prefs.getString("",null) ?: return null,
-                username = prefs.getString("",null) ?: return null,
-                password = prefs.getString("",null) ?: return null,
-                domain = prefs.getString("",null) ?: return null,
+                host = prefs.getString(PREF_KEY_SMB_HOST, null) ?: return null,
+                share = prefs.getString(PREF_KEY_SMB_SHARE, null) ?: return null,
+                path = prefs.getString(PREF_KEY_SMB_PATH, null) ?: return null,
+                username = prefs.getString(PREF_KEY_SMB_USER, null) ?: return null,
+                password = prefs.getString(PREF_KEY_SMB_PASS, null) ?: return null,
+                domain = prefs.getString(PREF_KEY_SMB_DOMAIN, null),
             )
             return createSmbProperties(context, config)
         }
@@ -236,6 +241,17 @@ class SettingsManager(private val context: Context) {
             putString(PREF_KEY_WEBDAV_URL, config.url)
             putString(PREF_KEY_WEBDAV_USER, config.username)
             putString(PREF_KEY_WEBDAV_PASS, config.password)
+        }
+    }
+
+    fun saveSmbConfig(config: SmbConfig) {
+        prefs.edit {
+            putString(PREF_KEY_SMB_HOST, config.host)
+            putString(PREF_KEY_SMB_SHARE, config.share)
+            putString(PREF_KEY_SMB_PATH, config.path)
+            putString(PREF_KEY_SMB_USER, config.username)
+            putString(PREF_KEY_SMB_PASS, config.password)
+            putString(PREF_KEY_SMB_DOMAIN, config.domain)
         }
     }
 

@@ -101,12 +101,13 @@ open class App : Application() {
                 storageBackup = get(),
                 safHandler = get(),
                 webDavHandler = get(),
+                smbHandler = get(),
                 settingsManager = get(),
                 backupRequester = get(),
                 backendManager = get(),
             )
         }
-        viewModel { RestoreStorageViewModel(this@App, get(), get(), get(), get()) }
+        viewModel { RestoreStorageViewModel(this@App, get(), get(), get(), get(), get()) }
     }
 
     override fun onCreate() {

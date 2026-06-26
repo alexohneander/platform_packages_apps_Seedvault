@@ -127,6 +127,12 @@
     <string name="storage_smb_option_title">SMB (beta)</string>
     <string name="storage_smb_option_summary">Integrated direct SMB access</string>
     <string name="storage_smb_config_host">SMB Host</string>
+    <string name="storage_smb_config_host_helper">Enter the SMB server host or IP address.</string>
+    <string name="storage_smb_config_share">Share name</string>
+    <string name="storage_smb_config_path">Path</string>
+    <string name="storage_smb_config_user">User name</string>
+    <string name="storage_smb_config_pass">Password</string>
+    <string name="storage_smb_config_button">Use SMB storage</string>
 
     <!-- Recovery Code -->
     <string name="recovery_code_title">Recovery code</string>

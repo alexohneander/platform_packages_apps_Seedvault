@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import app.grapheneos.backup.storage.api.StorageBackup
 import app.grapheneos.seedvault.core.backends.Backend
 import app.grapheneos.seedvault.core.backends.saf.SafProperties
+import app.grapheneos.seedvault.core.backends.smb.SmbProperties
 import app.grapheneos.seedvault.core.backends.webdav.WebDavProperties
 import java.io.IOException
 
@@ -40,9 +41,10 @@ internal class BackupStorageViewModel(
     private val storageBackup: StorageBackup,
     safHandler: SafHandler,
     webDavHandler: WebDavHandler,
+    smbHandler: com.stevesoltys.seedvault.backend.smb.SmbHandler,
     settingsManager: SettingsManager,
     backendManager: BackendManager,
-) : StorageViewModel(app, safHandler, webDavHandler, settingsManager, backendManager) {
+) : StorageViewModel(app, safHandler, webDavHandler, smbHandler, settingsManager, backendManager) {
 
     override val isRestoreOperation = false
 
@@ -75,6 +77,19 @@ internal class BackupStorageViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 webdavHandler.setPlugin(properties, backend)
+            }
+            withContext(Dispatchers.Main) {
+                scheduleBackupWorkers()
+                onNewBackendSet(isUsb = false)
+            }
+        }
+    }
+
+    override fun onSmbConfigSet(properties: SmbProperties, backend: Backend) {
+        smbHandler.save(properties)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                smbHandler.setPlugin(properties, backend)
             }
             withContext(Dispatchers.Main) {
                 scheduleBackupWorkers()

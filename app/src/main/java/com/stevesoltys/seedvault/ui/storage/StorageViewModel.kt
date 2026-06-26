@@ -16,6 +16,7 @@ import androidx.lifecycle.viewModelScope
 import com.stevesoltys.seedvault.R
 import com.stevesoltys.seedvault.backend.BackendManager
 import com.stevesoltys.seedvault.backend.saf.SafHandler
+import com.stevesoltys.seedvault.backend.smb.SmbHandler
 import com.stevesoltys.seedvault.backend.webdav.WebDavHandler
 import com.stevesoltys.seedvault.settings.SettingsManager
 import com.stevesoltys.seedvault.ui.LiveEvent
@@ -25,6 +26,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import app.grapheneos.seedvault.core.backends.Backend
 import app.grapheneos.seedvault.core.backends.saf.SafProperties
+import app.grapheneos.seedvault.core.backends.smb.SmbConfig
+import app.grapheneos.seedvault.core.backends.smb.SmbProperties
 import app.grapheneos.seedvault.core.backends.webdav.WebDavConfig
 import app.grapheneos.seedvault.core.backends.webdav.WebDavProperties
 
@@ -34,6 +37,7 @@ internal abstract class StorageViewModel(
     private val app: Application,
     protected val safHandler: SafHandler,
     protected val webdavHandler: WebDavHandler,
+    protected val smbHandler: SmbHandler,
     protected val settingsManager: SettingsManager,
     protected val backendManager: BackendManager,
 ) : AndroidViewModel(app), RemovableStorageListener {
@@ -92,12 +96,14 @@ internal abstract class StorageViewModel(
 
     abstract fun onSafUriSet(safProperties: SafProperties)
     abstract fun onWebDavConfigSet(properties: WebDavProperties, backend: Backend)
+    abstract fun onSmbConfigSet(properties: SmbProperties, backend: Backend)
 
     override fun onCleared() {
         storageOptionFetcher.setRemovableStorageListener(null)
         super.onCleared()
     }
     val webdavConfigState get() = webdavHandler.configState
+    val smbConfigState get() = smbHandler.configState
 
     fun onWebDavConfigReceived(url: String, user: String, pass: String) {
         val config = WebDavConfig(url = url, username = user, password = pass)
@@ -108,10 +114,24 @@ internal abstract class StorageViewModel(
 
     fun resetWebDavConfig() = webdavHandler.resetConfigState()
 
+    fun onSmbConfigReceived(config: SmbConfig) {
+        viewModelScope.launch(Dispatchers.IO) {
+            smbHandler.onConfigReceived(config)
+        }
+    }
+
+    fun resetSmbConfig() = smbHandler.resetConfigState()
+
     @UiThread
     fun onWebDavConfigSuccess(properties: WebDavProperties, backend: Backend) {
         mLocationSet.setEvent(true)
         onWebDavConfigSet(properties, backend)
+    }
+
+    @UiThread
+    fun onSmbConfigSuccess(properties: SmbProperties, backend: Backend) {
+        mLocationSet.setEvent(true)
+        onSmbConfigSet(properties, backend)
     }
 }
 

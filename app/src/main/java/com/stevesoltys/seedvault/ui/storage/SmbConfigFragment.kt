@@ -22,10 +22,11 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
 import com.google.android.material.textfield.TextInputEditText
 import com.stevesoltys.seedvault.R
-import com.stevesoltys.seedvault.backend.webdav.WebDavConfigState
+import com.stevesoltys.seedvault.backend.smb.SmbConfigState
 import com.stevesoltys.seedvault.ui.INTENT_EXTRA_IS_RESTORE
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.getActivityViewModel
+import app.grapheneos.seedvault.core.backends.smb.SmbConfig
 
 class SmbConfigFragment : Fragment(), View.OnClickListener {
 
@@ -41,7 +42,9 @@ class SmbConfigFragment : Fragment(), View.OnClickListener {
 
     private lateinit var viewModel: StorageViewModel
 
-    private lateinit var urlInput: TextInputEditText
+    private lateinit var hostInput: TextInputEditText
+    private lateinit var shareInput: TextInputEditText
+    private lateinit var pathInput: TextInputEditText
     private lateinit var userInput: TextInputEditText
     private lateinit var passInput: TextInputEditText
     private lateinit var button: Button
@@ -53,12 +56,14 @@ class SmbConfigFragment : Fragment(), View.OnClickListener {
         savedInstanceState: Bundle?,
     ): View {
         val v: View = inflater.inflate(R.layout.fragment_smb_config, container, false)
-        urlInput = v.requireViewById(R.id.smbHostInput)
-        // userInput = v.requireViewById(R.id.webdavUserInput)
-        // passInput = v.requireViewById(R.id.webDavPassInput)
-        // button = v.requireViewById(R.id.webdavButton)
+        hostInput = v.requireViewById(R.id.smbHostInput)
+        shareInput = v.requireViewById(R.id.smbShareInput)
+        pathInput = v.requireViewById(R.id.smbPathInput)
+        userInput = v.requireViewById(R.id.smbUserInput)
+        passInput = v.requireViewById(R.id.smbPassInput)
+        button = v.requireViewById(R.id.webdavButton)
         button.setOnClickListener(this)
-        // progressBar = v.requireViewById(R.id.progressBar)
+        progressBar = v.requireViewById(R.id.progressBar)
         return v
     }
 
@@ -71,49 +76,54 @@ class SmbConfigFragment : Fragment(), View.OnClickListener {
             getActivityViewModel<BackupStorageViewModel>()
         }
         lifecycleScope.launch {
-            viewModel.webdavConfigState.flowWithLifecycle(lifecycle, STARTED).collect {
+            viewModel.smbConfigState.flowWithLifecycle(lifecycle, STARTED).collect {
                 onConfigStateChanged(it)
             }
         }
     }
 
     override fun onClick(v: View) {
-        if (urlInput.text.isNullOrBlank()) {
+        val host = hostInput.text?.toString().orEmpty().trim()
+        if (host.isBlank()) {
             Snackbar.make(
                 requireView(),
                 R.string.storage_webdav_config_malformed_url,
                 LENGTH_LONG
             ).setAnchorView(button).show()
         } else {
-            viewModel.onWebDavConfigReceived(
-                url = urlInput.text.toString(),
-                user = userInput.text.toString(),
-                pass = passInput.text.toString(),
+            viewModel.onSmbConfigReceived(
+                config = SmbConfig(
+                    host = host,
+                    share = shareInput.text?.toString().orEmpty().trim(),
+                    path = pathInput.text?.toString().orEmpty().trim(),
+                    username = userInput.text?.toString().orEmpty().trim(),
+                    password = passInput.text?.toString().orEmpty().trim(),
+                )
             )
         }
     }
 
     override fun onDestroy() {
-        viewModel.resetWebDavConfig()
+        viewModel.resetSmbConfig()
         super.onDestroy()
     }
 
-    private fun onConfigStateChanged(state: WebDavConfigState) {
+    private fun onConfigStateChanged(state: SmbConfigState) {
         when (state) {
-            WebDavConfigState.Empty -> {
+            SmbConfigState.Empty -> {
             }
 
-            WebDavConfigState.Checking -> {
+            SmbConfigState.Checking -> {
                 beginDelayedTransition(requireView() as ViewGroup)
                 progressBar.visibility = VISIBLE
                 button.visibility = INVISIBLE
             }
 
-            is WebDavConfigState.Success -> {
-                viewModel.onWebDavConfigSuccess(state.properties, state.backend)
+            is SmbConfigState.Success -> {
+                viewModel.onSmbConfigSuccess(state.properties, state.backend)
             }
 
-            is WebDavConfigState.Error -> {
+            is SmbConfigState.Error -> {
                 val s = if (state.e == null) {
                     getString(R.string.storage_check_fragment_backup_error)
                 } else {

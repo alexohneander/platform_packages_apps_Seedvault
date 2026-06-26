@@ -6,6 +6,8 @@
 package com.stevesoltys.seedvault.backend.smb
 
 import android.content.Context
+import android.util.Log
+import androidx.annotation.WorkerThread
 import app.grapheneos.seedvault.core.backends.Backend
 import app.grapheneos.seedvault.core.backends.BackendFactory
 import app.grapheneos.seedvault.core.backends.smb.SmbConfig
@@ -15,6 +17,7 @@ import com.stevesoltys.seedvault.backend.BackendManager
 import com.stevesoltys.seedvault.settings.SettingsManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.io.IOException
 
 internal sealed interface SmbConfigState {
     object Empty : SmbConfigState
@@ -26,6 +29,8 @@ internal sealed interface SmbConfigState {
 
     class Error(val e: Exception?) : SmbConfigState
 }
+private val TAG = SmbHandler::class.java.simpleName
+
 internal class SmbHandler(
     private val context: Context,
     private val backendFactory: BackendFactory,
@@ -48,4 +53,42 @@ internal class SmbHandler(
 
     private val mConfigState = MutableStateFlow<SmbConfigState>(SmbConfigState.Empty)
     val configState = mConfigState.asStateFlow()
+
+    suspend fun onConfigReceived(config: SmbConfig) {
+        mConfigState.value = SmbConfigState.Checking
+        val backend = backendFactory.createSmbBackend(config)
+        try {
+            if (backend.test()) {
+                val properties = createSmbProperties(context, config)
+                mConfigState.value = SmbConfigState.Success(properties, backend)
+            } else {
+                mConfigState.value = SmbConfigState.Error(null)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error testing SMB config at ${config.host}", e)
+            mConfigState.value = SmbConfigState.Error(e)
+        }
+    }
+
+    fun resetConfigState() {
+        mConfigState.value = SmbConfigState.Empty
+    }
+
+    @WorkerThread
+    @Throws(IOException::class)
+    suspend fun hasBackup(backend: Backend): Boolean {
+        return backend.getAvailableBackupFileHandles().isNotEmpty()
+    }
+
+    fun save(properties: SmbProperties) {
+        settingsManager.saveSmbConfig(properties.config)
+    }
+
+    @WorkerThread
+    fun setPlugin(properties: SmbProperties, backend: Backend) {
+        backendManager.changePlugins(
+            backend = backend,
+            storageProperties = properties,
+        )
+    }
 }

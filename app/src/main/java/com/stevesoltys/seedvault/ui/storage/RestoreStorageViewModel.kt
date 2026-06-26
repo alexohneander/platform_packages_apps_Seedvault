@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import app.grapheneos.seedvault.core.backends.Backend
 import app.grapheneos.seedvault.core.backends.Constants.DIRECTORY_ROOT
 import app.grapheneos.seedvault.core.backends.saf.SafProperties
+import app.grapheneos.seedvault.core.backends.smb.SmbProperties
 import app.grapheneos.seedvault.core.backends.webdav.WebDavProperties
 
 private val TAG = RestoreStorageViewModel::class.java.simpleName
@@ -26,9 +27,10 @@ internal class RestoreStorageViewModel(
     private val app: Application,
     safHandler: SafHandler,
     webDavHandler: WebDavHandler,
+    smbHandler: com.stevesoltys.seedvault.backend.smb.SmbHandler,
     settingsManager: SettingsManager,
     backendManager: BackendManager,
-) : StorageViewModel(app, safHandler, webDavHandler, settingsManager, backendManager) {
+) : StorageViewModel(app, safHandler, webDavHandler, smbHandler, settingsManager, backendManager) {
 
     override val isRestoreOperation = true
 
@@ -75,6 +77,30 @@ internal class RestoreStorageViewModel(
                 Log.w(TAG, "Location was rejected: ${properties.config.url}")
 
                 // notify the UI that the location was invalid
+                val errorMsg =
+                    app.getString(R.string.restore_invalid_location_message, DIRECTORY_ROOT)
+                mLocationChecked.postEvent(LocationResult(errorMsg))
+            }
+        }
+    }
+
+    override fun onSmbConfigSet(properties: SmbProperties, backend: Backend) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val hasBackup = try {
+                smbHandler.hasBackup(backend)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error reading: ${properties.config.host}", e)
+                val errorMsg = app.getString(R.string.restore_set_error) + "\n\n$e"
+                mLocationChecked.postEvent(LocationResult(errorMsg))
+                return@launch
+            }
+            if (hasBackup) {
+                smbHandler.save(properties)
+                smbHandler.setPlugin(properties, backend)
+                mLocationChecked.postEvent(LocationResult())
+            } else {
+                Log.w(TAG, "Location was rejected: ${properties.config.host}")
+
                 val errorMsg =
                     app.getString(R.string.restore_invalid_location_message, DIRECTORY_ROOT)
                 mLocationChecked.postEvent(LocationResult(errorMsg))
